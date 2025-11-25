@@ -1,11 +1,25 @@
 <script setup lang="ts"></script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <RouterView />
+
 </template>
 
-<style scoped></style>
+<style scoped>
+html, body, #app {
+  height: 100%;
+}
+
+:root {
+  --bg: #0f172a;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #22c55e;
+}
+
+#app {
+  background: var(--bg);
+  color: var(--text);
+}
+</style>

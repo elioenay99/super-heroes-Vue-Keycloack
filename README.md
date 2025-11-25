@@ -1,48 +1,23 @@
-# test-project
+## Superhero List (MVVM)
 
-This template should help get you started developing with Vue 3 in Vite.
+Este projeto agora inclui uma página que lista heróis da Superhero API pública:
 
-## Recommended IDE Setup
+- Base URL: https://akabab.github.io/superhero-api/api
+- Rota principal: `/` (lista de heróis)
+- Arquitetura: MVVM usando Pinia como ViewModel, serviço HTTP tipado e modelos TypeScript (sem `any`).
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Estrutura relevante:
 
-## Recommended Browser Setup
+- `src/models/superhero.ts` — Interfaces completas tipadas para as respostas da API
+- `src/services/superheroApi.ts` — Serviço HTTP tipado para `/all.json` e `/id/:id.json`
+- `src/stores/heroes.ts` — Store Pinia (ViewModel) com estado `items`, `loading`, `error` e ação `fetchAll`
+- `src/views/HeroesListView.vue` — View que consome o ViewModel e exibe grid de heróis
+- `src/router/index.ts` — Rota `/` apontando para a lista
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas de forma preguiçosa (lazy) e os tipos cobrem todo o contrato da API.
 
-## Type Support for `.vue` Imports in TS
+### Requisitos de ambiente
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- Node.js: ^20.19.0 ou >=22.12.0
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+Se ao rodar `npm run dev` você ver um erro como `SyntaxError: Unexpected token '.'` vindo do Vite, é sinal de Node antigo. Atualize seu Node (ex.: `nvm install 22 && nvm use 22`) e rode novamente. O comando `npm run dev` agora verifica a versão do Node e interrompe com uma mensagem clara caso esteja desatualizado.
