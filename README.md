@@ -9,7 +9,8 @@ Este projeto agora inclui uma página que lista heróis da Superhero API públic
 Estrutura relevante:
 
 - `src/models/superhero.ts` — Interfaces completas tipadas para as respostas da API
-- `src/services/superheroApi.ts` — Serviço HTTP tipado para `/all.json` e `/id/:id.json`
+- `src/services/superheroApi.ts` — Serviço HTTP tipado (usando Axios) para `/all.json` e `/id/:id.json`
+- `src/lib/http.ts` — Cliente Axios configurado com baseURL, headers e timeout
 - `src/stores/heroes.ts` — Store Pinia (ViewModel) com estado `items`, `loading`, `error` e ação `fetchAll`
 - `src/views/HeroesListView.vue` — View que consome o ViewModel e exibe grid de heróis
 - `src/router/index.ts` — Rota `/` apontando para a lista
@@ -21,3 +22,8 @@ Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas 
 - Node.js: ^20.19.0 ou >=22.12.0
 
 Se ao rodar `npm run dev` você ver um erro como `SyntaxError: Unexpected token '.'` vindo do Vite, é sinal de Node antigo. Atualize seu Node (ex.: `nvm install 22 && nvm use 22`) e rode novamente. O comando `npm run dev` agora verifica a versão do Node e interrompe com uma mensagem clara caso esteja desatualizado.
+
+### HTTP Client
+
+- As requisições agora usam Axios. O cliente fica em `src/lib/http.ts` e respeita a variável `VITE_BASE_URL` quando definida (senão usa a URL pública padrão da API).
+- Cancelamento é suportado via `AbortSignal` (Axios >=1.4).
