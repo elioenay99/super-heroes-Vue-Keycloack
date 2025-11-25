@@ -1,6 +1,6 @@
 import type { Hero } from '@/models/superhero'
 
-const BASE_URL = 'https://akabab.github.io/superhero-api/api'
+const BASE_URL = import.meta.env.VITE_BASE_URL
 
 async function httpGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, { signal, headers: { Accept: 'application/json' } })
