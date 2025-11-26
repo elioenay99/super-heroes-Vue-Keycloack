@@ -1,25 +1,10 @@
 <script setup lang="ts"></script>
 
 <template>
-  <RouterView />
+  <div class="min-h-screen bg-slate-900 text-slate-100 antialiased selection:bg-emerald-400/30 selection:text-emerald-100">
+    <RouterView />
+  </div>
 
 </template>
 
-<style scoped>
-html, body, #app {
-  height: 100%;
-}
-
-:root {
-  --bg: #0f172a;
-  --card: #111827;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --accent: #22c55e;
-}
-
-#app {
-  background: var(--bg);
-  color: var(--text);
-}
-</style>
+<style scoped></style>

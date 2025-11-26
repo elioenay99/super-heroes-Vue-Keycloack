@@ -17,6 +17,18 @@ Estrutura relevante:
 
 Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas de forma preguiçosa (lazy) e os tipos cobrem todo o contrato da API.
 
+### Paginação e UI
+
+- Paginação no cliente (Pinia): `page`, `pageSize`, `totalPages`, `pagedItems`, com ações `setPage`, `nextPage`, `prevPage`, `setPageSize`.
+- Controles de paginação na tela (primeiro/anterior/próximo/último) e seletor de itens por página (12/24/48/96).
+- Cards estilizados com hover, badge do publisher, e chip de alinhamento (good/bad/neutral).
+
+### Estilo com Tailwind
+
+- A UI foi migrada para Tailwind CSS utilizando CDN para zero-config.
+- Não é necessário instalar dependências extras: basta rodar `npm run dev`.
+- Caso queira usar Tailwind localmente com build, substitua o CDN por setup tradicional; para o escopo deste projeto, o CDN atende bem.
+
 ### Requisitos de ambiente
 
 - Node.js: ^20.19.0 ou >=22.12.0
