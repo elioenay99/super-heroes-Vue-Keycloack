@@ -1,12 +1,12 @@
 // Tipagens para a Superhero API (sem any)
 
 export interface Powerstats {
-  intelligence: number
-  strength: number
-  speed: number
-  durability: number
-  power: number
-  combat: number
+  intelligence: number | null
+  strength: number | null
+  speed: number | null
+  durability: number | null
+  power: number | null
+  combat: number | null
 }
 
 export interface Appearance {

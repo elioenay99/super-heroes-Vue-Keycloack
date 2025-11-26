@@ -16,6 +16,12 @@ const router = createRouter({
       component: () => import('@/views/HeroDetailView.vue'),
       props: true,
     },
+    {
+      path: '/compare',
+      name: 'compare',
+      // lazy load
+      component: () => import('@/views/CompareView.vue'),
+    },
   ],
 })
 

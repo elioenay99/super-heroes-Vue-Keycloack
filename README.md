@@ -1,4 +1,4 @@
-## Superhero List (MVVM)
+## Superhero List (MVVM) + Comparação com Radar
 
 Este projeto agora inclui uma página que lista heróis da Superhero API pública:
 
@@ -14,7 +14,7 @@ Estrutura relevante:
 - `src/stores/heroes.ts` — Store Pinia (ViewModel) com estado `items`, `loading`, `error` e ação `fetchAll`
 - `src/views/HeroesListView.vue` — View que consome o ViewModel e exibe grid de heróis
 - `src/views/HeroDetailView.vue` — View de detalhes, carregada sob demanda, que busca dados por ID
-- `src/router/index.ts` — Rota `/` apontando para a lista
+- `src/router/index.ts` — Rotas `/` (lista), `/heroes/:id` (detalhe) e `/compare` (comparação)
 
 Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas de forma preguiçosa (lazy) e os tipos cobrem todo o contrato da API.
 
@@ -45,6 +45,40 @@ Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas 
   - Powerstats (intelligence, strength, speed, durability, power, combat);
   - Aparência, Biografia, Trabalho e Conexões.
 - Há um botão "Voltar" para retornar à lista.
+
+### Comparação lado a lado (`/compare`)
+
+- Nova rota: `/compare?ids=1,2` (2 até 4 IDs) — compartilhe o link para discutir “quem venceria”.
+- Picker com busca e autocomplete (debounce 250ms), Enter adiciona o primeiro resultado; atalho Ctrl+K foca o campo.
+- Chips/badges dos selecionados com botão remover, limite 4, sem duplicados.
+- Cartões lado a lado com imagem, nome, publisher, alignment e lista compacta de stats.
+- Gráfico de radar (Chart.js + vue-chartjs) compara `intelligence`, `strength`, `speed`, `durability`, `power`, `combat` (0–100):
+  - Legenda clicável; responsivo; escala 0–100; tema escuro.
+  - Valores `null`/`NaN` tratados como 0, tooltip marca “(sem dado)”; segmento tracejado para pontos sem dado.
+- Reordenação simples via botões/setas (esquerda/direita) nos cards; Delete/Backspace remove (acessível por teclado).
+- Sincronização com URL: alterações de seleção atualizam `?ids=...` e, ao entrar na rota, os `ids` são parseados para preencher a seleção. IDs inválidos são ignorados e um aviso discreto é mostrado.
+
+Arquivos principais desta feature:
+
+- `src/views/CompareView.vue` — integra picker, cards, gráfico e tabela.
+- `src/components/ComparePicker.vue` — busca + autocomplete + chips dos selecionados.
+- `src/components/HeroCompareCard.vue` — cartão compacto de perfil + mini lista de stats e controles de ordem.
+- `src/components/RadarPowerstatsChart.vue` — wrapper Chart.js (radar) configurado para tema escuro.
+- `src/stores/compare.ts` — store Pinia para `selectedIds` e ações `add/remove/set/move`.
+- `src/stores/heroes.ts` — agora mantém o cache completo (`Hero[]`) e expõe `byId`/`getByIds` para composição.
+
+Exemplos de URLs:
+
+- `/compare?ids=1,2` — compara os IDs 1 e 2.
+- `/compare?ids=620,332,346,489` — compara 4 heróis.
+
+Atalho “Comparar” na lista:
+
+- Cada card da lista (`/`) possui um botão “Comparar” que navega para `/compare?ids=<id>`, acumulando com os já presentes (até 4).
+
+### Dependências de gráficos
+
+- `chart.js@^4` e `vue-chartjs@^5` foram adicionados. Rode `npm install` caso ainda não tenha instalado essas dependências.
 
 ### Requisitos de ambiente
 

@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useHeroesStore } from '@/stores/heroes'
+import { useCompareStore } from '@/stores/compare'
 
 const store = useHeroesStore()
+const compare = useCompareStore()
+const router = useRouter()
 
 onMounted(() => {
   // Permite cancelar se a view desmontar (não implementado aqui por simplicidade)
   void store.fetchAll()
 })
+
+function goCompare(id: number) {
+  // acumula com os já presentes (se houver), sem duplicar e limitando a 4
+  const current = compare.selectedIds
+  const list = Array.from(new Set([...current, id])).slice(0, 4)
+  router.push({ name: 'compare', query: { ids: list.join(',') } })
+}
 </script>
 
 <template>
@@ -58,10 +69,10 @@ onMounted(() => {
           <label class="inline-flex items-center gap-2 text-slate-400 text-sm">
             Itens por página
             <select class="rounded-lg border border-white/10 bg-slate-800 px-2 py-1 text-slate-100" :value="store.pageSize" @change="store.setPageSize(parseInt(($event.target as HTMLSelectElement).value))">
-              <option :value="12">12</option>
-              <option :value="24">24</option>
-              <option :value="48">48</option>
-              <option :value="96">96</option>
+              <option :value="10">10</option>
+              <option :value="20">20</option>
+              <option :value="30">30</option>
+              <option :value="100">100</option>
             </select>
           </label>
         </div>
@@ -88,6 +99,15 @@ onMounted(() => {
                 </p>
               </div>
             </RouterLink>
+            <div class="mt-2 flex justify-end">
+              <button
+                class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-slate-800 px-3 py-1.5 text-xs hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                @click.prevent.stop="goCompare(h.id)"
+                aria-label="Comparar este herói"
+              >
+                Comparar
+              </button>
+            </div>
           </li>
         </ul>
 

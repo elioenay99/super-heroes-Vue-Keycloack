@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { Hero, HeroListItem } from '@/models/superhero'
+import type { Hero } from '@/models/superhero'
 import { superheroApi } from '@/services/superheroApi'
 
 export const useHeroesStore = defineStore('heroes', () => {
-  const items = ref<HeroListItem[]>([])
+  // Mantemos o cache completo de heróis (inclui powerstats) para reutilização em múltiplas telas
+  const items = ref<Hero[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const page = ref(1)
-  const pageSize = ref(24)
+  const pageSize = ref(20)
   const query = ref('')
 
   // Sempre que a busca mudar, voltamos para a primeira página
@@ -21,14 +22,8 @@ export const useHeroesStore = defineStore('heroes', () => {
     error.value = null
     try {
       const data = await superheroApi.getAll(signal)
-      // Mapeia para uma lista enxuta
-      items.value = data.map((h: Hero) => ({
-        id: h.id,
-        name: h.name,
-        slug: h.slug,
-        images: h.images,
-        biography: h.biography,
-      }))
+      // Mantemos os objetos inteiros (com powerstats) para comparação e detalhes
+      items.value = data
       // Ajusta página após carregar
       if (page.value < 1) page.value = 1
       if (page.value > totalPages.value) page.value = totalPages.value
@@ -81,5 +76,24 @@ export const useHeroesStore = defineStore('heroes', () => {
     page.value = 1
   }
 
-  return { items, loading, error, fetchAll, query, filteredItems, count, page, pageSize, totalPages, pagedItems, setPage, nextPage, prevPage, setPageSize, setQuery }
+  // Índice por ID para buscas rápidas O(1)
+  const byIdMap = computed(() => {
+    const map = new Map<number, Hero>()
+    for (const h of items.value) map.set(h.id, h)
+    return map
+  })
+
+  // Retorna um herói por ID (ou undefined se não estiver carregado)
+  function byId(id: number): Hero | undefined {
+    return byIdMap.value.get(id)
+  }
+
+  // Retorna uma lista de heróis na mesma ordem dos IDs informados
+  function getByIds(ids: number[]): Hero[] {
+    return ids
+      .map((id) => byIdMap.value.get(id))
+      .filter((h): h is Hero => !!h)
+  }
+
+  return { items, loading, error, fetchAll, query, filteredItems, count, page, pageSize, totalPages, pagedItems, setPage, nextPage, prevPage, setPageSize, setQuery, byId, getByIds }
 })
