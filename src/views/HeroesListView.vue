@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useIntersectionObserver, watchDebounced } from '@vueuse/core'
+import { useHead } from '@vueuse/head'
 import { useHeroesStore } from '@/stores/heroes'
 import { useCompareStore } from '@/stores/compare'
 
@@ -8,10 +9,18 @@ const store = useHeroesStore()
 const compare = useCompareStore()
 const sentinel = ref<HTMLElement | null>(null)
 
+// Cancelamento de requisição ao desmontar/navegações rápidas
+let controller: AbortController | null = null
+function fetchAllWithAbort() {
+  controller?.abort()
+  controller = new AbortController()
+  void store.fetchAll(controller.signal)
+}
+
 onMounted(() => {
-  // Permite cancelar se a view desmontar (não implementado aqui por simplicidade)
-  void store.fetchAll()
+  fetchAllWithAbort()
 })
+onBeforeUnmount(() => controller?.abort())
 
 // Debounce da busca: reseta para página 1 quando query muda
 watchDebounced(
@@ -35,6 +44,22 @@ function toggleCompare(id: number) {
   if (compare.selectedIds.includes(id)) compare.remove(id)
   else compare.add(id)
 }
+
+// Metadados por rota (dinâmico pela busca)
+const title = computed(() => {
+  const q = store.query.trim()
+  return q ? `Super-heróis — Busca: ${q}` : 'Super-heróis — Lista'
+})
+useHead(() => ({
+  title: title.value,
+  meta: [
+    { name: 'description', content: 'Explore super-heróis, filtre por nome e descubra seus atributos.' },
+    { property: 'og:title', content: title.value },
+    { property: 'og:description', content: 'Lista pesquisável de super-heróis com detalhes e comparação.' },
+    { property: 'og:type', content: 'website' },
+    { name: 'twitter:card', content: 'summary' },
+  ],
+}))
 </script>
 
 <template>
@@ -80,7 +105,7 @@ function toggleCompare(id: number) {
     </section>
     <section v-else-if="store.error" class="py-6">
       <p class="text-rose-300">Ocorreu um erro: {{ store.error }}</p>
-      <button class="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-500/90 px-3 py-2 text-sm font-medium text-emerald-950 hover:bg-emerald-400" @click="store.fetchAll()">
+      <button class="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-500/90 px-3 py-2 text-sm font-medium text-emerald-950 hover:bg-emerald-400" @click="fetchAllWithAbort()">
         Tentar novamente
       </button>
     </section>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useHead } from '@vueuse/head'
 import { useHeroesStore } from '@/stores/heroes'
 import { useCompareStore } from '@/stores/compare'
 import { useRouteQuery } from '@vueuse/router'
@@ -7,15 +8,24 @@ import { parseIdsFromQuery, arrayEquals } from '@/utils/ids'
 import ComparePicker from '@/components/ComparePicker.vue'
 import HeroCompareCard from '@/components/HeroCompareCard.vue'
 import RadarPowerstatsChart, { type HeroSeries } from '@/components/RadarPowerstatsChart.vue'
+import { palette, paletteColor } from '@/constants/theme'
 
 const heroes = useHeroesStore()
 const compare = useCompareStore()
 // Query reativa "ids" via VueUse Router
 const idsQuery = useRouteQuery<string | undefined>('ids')
 
+// Cancelamento da carga inicial ao desmontar/navegações rápidas
+let controller: AbortController | null = null
+
 onMounted(() => {
-  if (heroes.items.length === 0 && !heroes.loading) void heroes.fetchAll()
+  if (heroes.items.length === 0 && !heroes.loading) {
+    controller?.abort()
+    controller = new AbortController()
+    void heroes.fetchAll(controller.signal)
+  }
 })
+onBeforeUnmount(() => controller?.abort())
 
 // Sincroniza: URL -> Store (inclusive na carga inicial)
 watch(
@@ -37,8 +47,7 @@ watch(
   }
 )
 
-// Cores fixas de alto contraste (tema escuro)
-const palette = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b'] // emerald, cyan, violet, amber
+// Cores vindas de constants/theme
 
 const selectedHeroes = computed(() => heroes.getByIds(compare.selectedIds))
 
@@ -46,7 +55,7 @@ const series = computed<HeroSeries[]>(() =>
   selectedHeroes.value.map((h, i) => ({
     id: h.id,
     name: h.name,
-    color: palette[i % palette.length],
+    color: paletteColor(i),
     stats: {
       intelligence: h.powerstats.intelligence ?? 0,
       strength: h.powerstats.strength ?? 0,
@@ -69,6 +78,21 @@ function moveLeft(index: number) {
 function moveRight(index: number) {
   compare.move(index, index + 1)
 }
+
+// Metadados por rota: título com contagem de selecionados
+const title = computed(() => {
+  const c = compare.selectedIds.length
+  return c > 0 ? `Comparar (${c}) — Super-heróis` : 'Comparar — Super-heróis'
+})
+useHead(() => ({
+  title: title.value,
+  meta: [
+    { name: 'description', content: 'Compare atributos de super-heróis lado a lado.' },
+    { property: 'og:title', content: title.value },
+    { property: 'og:description', content: 'Selecione até 4 heróis e compare seus powerstats.' },
+    { property: 'og:type', content: 'website' },
+  ],
+}))
 </script>
 
 <template>

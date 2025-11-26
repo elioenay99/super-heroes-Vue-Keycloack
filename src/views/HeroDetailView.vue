@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
+import { useHead } from '@vueuse/head'
 import type { Hero } from '@/models/superhero'
 import { superheroApi } from '@/services/superheroApi'
 
@@ -10,6 +11,9 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 async function fetchHero() {
+  // cancela requisição anterior, se houver
+  controller?.abort()
+  controller = new AbortController()
   const parsed = Number(props.id)
   if (!Number.isFinite(parsed) || parsed <= 0) {
     error.value = 'ID inválido'
@@ -19,17 +23,40 @@ async function fetchHero() {
   error.value = null
   hero.value = null
   try {
-    hero.value = await superheroApi.getById(parsed)
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Erro ao carregar herói'
-    error.value = msg
+    hero.value = await superheroApi.getById(parsed, controller.signal)
+  } catch (e: unknown) {
+    // Ignora cancelamentos para evitar exibir erro em navegações rápidas
+    const hasAxiosCanceledCode =
+      typeof e === 'object' && e !== null && 'code' in e && (e as { code?: unknown }).code === 'ERR_CANCELED'
+    const canceled = controller?.signal.aborted || hasAxiosCanceledCode
+    if (!canceled) {
+      const msg = e instanceof Error ? e.message : 'Erro ao carregar herói'
+      error.value = msg
+    }
   } finally {
     loading.value = false
   }
 }
 
+// Controller para cancelar em mudanças e ao desmontar
+let controller: AbortController | null = null
+
 onMounted(fetchHero)
 watch(() => props.id, fetchHero)
+onBeforeUnmount(() => controller?.abort())
+
+// Metadados por rota: título/descrição/imagem quando dados carregarem
+const title = computed(() => (hero.value ? `${hero.value.name} — Super-herói` : 'Detalhes — Super-heróis'))
+useHead(() => ({
+  title: title.value,
+  meta: [
+    { name: 'description', content: hero.value ? `Detalhes de ${hero.value.name}: atributos, aparência e biografia.` : 'Detalhes do super-herói.' },
+    { property: 'og:title', content: title.value },
+    { property: 'og:description', content: hero.value ? `Veja os powerstats e biografia de ${hero.value.name}.` : 'Detalhes do super-herói.' },
+    hero.value?.images?.lg ? { property: 'og:image', content: hero.value.images.lg } : undefined,
+    { property: 'og:type', content: 'article' },
+  ].filter(Boolean) as { name?: string; property?: string; content: string }[],
+}))
 </script>
 
 <template>
