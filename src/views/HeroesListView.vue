@@ -1,37 +1,35 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useIntersectionObserver, watchDebounced } from '@vueuse/core'
 import { useHeroesStore } from '@/stores/heroes'
 import { useCompareStore } from '@/stores/compare'
 
 const store = useHeroesStore()
 const compare = useCompareStore()
 const sentinel = ref<HTMLElement | null>(null)
-let obs: IntersectionObserver | null = null
-let debounceId: number | undefined
 
 onMounted(() => {
   // Permite cancelar se a view desmontar (não implementado aqui por simplicidade)
   void store.fetchAll()
-  // IntersectionObserver para scroll infinito opcional (fallback continua com paginação)
-  const el = sentinel.value
-  if (el && 'IntersectionObserver' in window) {
-    obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && store.page < store.totalPages && !store.loading) {
-        store.nextPage()
-      }
-    })
-    obs.observe(el)
+})
+
+// Debounce da busca: reseta para página 1 quando query muda
+watchDebounced(
+  () => store.query,
+  () => {
+    store.setPage(1)
+  },
+  { debounce: 250, maxWait: 1000 }
+)
+
+// IntersectionObserver com limpeza automática via VueUse
+useIntersectionObserver(sentinel, (entries) => {
+  const entry = entries[0]
+  if (!entry) return
+  if (entry.isIntersecting && store.page < store.totalPages && !store.loading) {
+    store.nextPage()
   }
 })
-
-onBeforeUnmount(() => {
-  obs?.disconnect()
-})
-
-function onSearch() {
-  clearTimeout(debounceId)
-  debounceId = window.setTimeout(() => store.setPage(1), 250)
-}
 
 function toggleCompare(id: number) {
   if (compare.selectedIds.includes(id)) compare.remove(id)
@@ -54,10 +52,10 @@ function toggleCompare(id: number) {
             type="search"
             placeholder="Buscar por nome…"
             class="peer w-full sm:w-80 rounded-lg border border-white/10 bg-slate-800 pl-9 pr-9 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-white/20"
-            @input="onSearch"
           />
           <button v-if="store.query" @click="store.query = ''"
                   class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  aria-label="Limpar busca"
                   title="Limpar">×</button>
         </label>
         <p class="text-slate-300 mt-1 sm:mt-0" aria-live="polite">

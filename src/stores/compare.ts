@@ -33,7 +33,7 @@ export const useCompareStore = defineStore('compare', () => {
     if (fromIndex < 0 || fromIndex >= list.length) return
     if (toIndex < 0 || toIndex >= list.length) return
     const [item] = list.splice(fromIndex, 1)
-    list.splice(toIndex, 0, item)
+    list.splice(toIndex, 0, item as number)
     selectedIds.value = list
   }
 

@@ -1,61 +1,41 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import type { LocationQuery } from 'vue-router'
 import { useHeroesStore } from '@/stores/heroes'
-import { useCompareStore, MAX_COMPARE } from '@/stores/compare'
+import { useCompareStore } from '@/stores/compare'
+import { useRouteQuery } from '@vueuse/router'
+import { parseIdsFromQuery, arrayEquals } from '@/utils/ids'
 import ComparePicker from '@/components/ComparePicker.vue'
 import HeroCompareCard from '@/components/HeroCompareCard.vue'
 import RadarPowerstatsChart, { type HeroSeries } from '@/components/RadarPowerstatsChart.vue'
 
 const heroes = useHeroesStore()
 const compare = useCompareStore()
-const route = useRoute()
-const router = useRouter()
+// Query reativa "ids" via VueUse Router
+const idsQuery = useRouteQuery<string | undefined>('ids')
 
 onMounted(() => {
   if (heroes.items.length === 0 && !heroes.loading) void heroes.fetchAll()
-  // Inicializa a seleção a partir da query `ids`
-  const ids = parseIdsFromQuery(route.query.ids)
-  if (ids.length > 0) compare.set(ids)
 })
 
+// Sincroniza: URL -> Store (inclusive na carga inicial)
 watch(
-  () => route.query.ids,
-  (q) => {
-    const ids = parseIdsFromQuery(q)
-    compare.set(ids)
-  }
+  idsQuery,
+  (val) => {
+    const ids = parseIdsFromQuery(val)
+    if (!arrayEquals(compare.selectedIds, ids)) compare.set(ids)
+  },
+  { immediate: true }
 )
 
 watch(
   () => compare.selectedIds.slice(),
   (ids) => {
-    // Atualiza a query `ids` mantendo outras queries
-    const current = parseIdsFromQuery(route.query.ids)
+    // Store -> URL (evita loop)
+    const current = parseIdsFromQuery(idsQuery.value)
     if (arrayEquals(current, ids)) return
-    const qs: LocationQuery = { ...route.query }
-    if (ids.length > 0) qs.ids = ids.join(',')
-    else delete qs.ids
-    router.replace({ query: qs })
+    idsQuery.value = ids.length ? ids.join(',') : undefined
   }
 )
-
-function parseIdsFromQuery(q: unknown): number[] {
-  if (!q) return []
-  const s = Array.isArray(q) ? q[0] : String(q)
-  return s
-    .split(',')
-    .map((x) => Math.trunc(Number(x)))
-    .filter((n) => Number.isFinite(n) && n > 0)
-    .slice(0, MAX_COMPARE)
-}
-
-function arrayEquals(a: number[], b: number[]) {
-  if (a.length !== b.length) return false
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
-  return true
-}
 
 // Cores fixas de alto contraste (tema escuro)
 const palette = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b'] // emerald, cyan, violet, amber
