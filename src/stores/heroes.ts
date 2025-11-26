@@ -9,7 +9,7 @@ export const useHeroesStore = defineStore('heroes', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const page = ref(1)
-  const pageSize = ref(20)
+  const pageSize = ref(12)
   const query = ref('')
 
   // Sempre que a busca mudar, voltamos para a primeira página
