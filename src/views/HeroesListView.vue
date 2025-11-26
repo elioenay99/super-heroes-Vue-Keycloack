@@ -12,11 +12,28 @@ onMounted(() => {
 
 <template>
   <div class="mx-auto max-w-6xl px-4 py-6">
-    <header class="flex items-baseline justify-between mb-4">
-      <h1 class="text-3xl font-semibold tracking-tight">Superheroes</h1>
-      <div class="flex items-baseline gap-3">
-        <p class="text-slate-400">Fonte: akabab/superhero-api</p>
-        <p class="text-sm text-slate-400" v-if="store.count">{{ store.count }} heróis • Página {{ store.page }} de {{ store.totalPages }}</p>
+    <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight">Superheroes</h1>
+        <p class="text-slate-400 mt-1">Fonte: akabab/superhero-api</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
+        <div class="relative">
+          <input
+            v-model="store.query"
+            type="search"
+            placeholder="Buscar por nome…"
+            class="peer w-full sm:w-72 rounded-lg border border-white/10 bg-slate-800 px-3 py-2 pr-9 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-white/20"
+          />
+          <button
+            v-if="store.query"
+            @click="store.query = ''"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+            aria-label="Limpar busca"
+            title="Limpar"
+          >×</button>
+        </div>
+        <p class="text-xs text-slate-400 sm:text-sm" v-if="store.count">{{ store.count }} resultados • Página {{ store.page }} de {{ store.totalPages }}</p>
       </div>
     </header>
 
@@ -28,7 +45,7 @@ onMounted(() => {
       </button>
     </section>
     <section v-else>
-      <div v-if="store.count === 0" class="text-slate-400 py-6">Nenhum herói encontrado.</div>
+      <div v-if="store.count === 0" class="text-slate-400 py-6">Nenhum herói encontrado<span v-if="store.query"> para "{{ store.query }}"</span>.</div>
       <div v-else>
         <div class="flex flex-wrap items-center justify-between gap-3 my-2" aria-label="Paginação e opções">
           <div class="flex flex-wrap items-center gap-2">

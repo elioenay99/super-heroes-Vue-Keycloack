@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Hero, HeroListItem } from '@/models/superhero'
 import { superheroApi } from '@/services/superheroApi'
 
@@ -9,6 +9,12 @@ export const useHeroesStore = defineStore('heroes', () => {
   const error = ref<string | null>(null)
   const page = ref(1)
   const pageSize = ref(24)
+  const query = ref('')
+
+  // Sempre que a busca mudar, voltamos para a primeira página
+  watch(query, () => {
+    page.value = 1
+  })
 
   async function fetchAll(signal?: AbortSignal) {
     loading.value = true
@@ -25,9 +31,7 @@ export const useHeroesStore = defineStore('heroes', () => {
       }))
       // Ajusta página após carregar
       if (page.value < 1) page.value = 1
-      if (page.value > Math.max(1, Math.ceil(items.value.length / pageSize.value))) {
-        page.value = 1
-      }
+      if (page.value > totalPages.value) page.value = totalPages.value
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Erro desconhecido'
       error.value = message
@@ -36,11 +40,17 @@ export const useHeroesStore = defineStore('heroes', () => {
     }
   }
 
-  const count = computed(() => items.value.length)
+  const filteredItems = computed(() => {
+    const q = query.value.trim().toLowerCase()
+    if (!q) return items.value
+    return items.value.filter((it) => it.name.toLowerCase().includes(q))
+  })
+
+  const count = computed(() => filteredItems.value.length)
   const totalPages = computed(() => (count.value === 0 ? 1 : Math.ceil(count.value / pageSize.value)))
   const pagedItems = computed(() => {
     const start = (page.value - 1) * pageSize.value
-    return items.value.slice(start, start + pageSize.value)
+    return filteredItems.value.slice(start, start + pageSize.value)
   })
 
   function setPage(newPage: number) {
@@ -65,5 +75,11 @@ export const useHeroesStore = defineStore('heroes', () => {
     if (page.value > totalPages.value) page.value = totalPages.value
   }
 
-  return { items, loading, error, fetchAll, count, page, pageSize, totalPages, pagedItems, setPage, nextPage, prevPage, setPageSize }
+  function setQuery(q: string) {
+    query.value = q
+    // Sempre que a busca mudar, resetamos para a primeira página
+    page.value = 1
+  }
+
+  return { items, loading, error, fetchAll, query, filteredItems, count, page, pageSize, totalPages, pagedItems, setPage, nextPage, prevPage, setPageSize, setQuery }
 })

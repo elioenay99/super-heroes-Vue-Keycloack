@@ -29,6 +29,13 @@ Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas 
 - Não é necessário instalar dependências extras: basta rodar `npm run dev`.
 - Caso queira usar Tailwind localmente com build, substitua o CDN por setup tradicional; para o escopo deste projeto, o CDN atende bem.
 
+### Busca
+
+- Implementada busca por nome diretamente na lista de heróis.
+- Campo de pesquisa no cabeçalho: digite para filtrar em tempo real (case-insensitive).
+- A paginação passa a considerar somente os itens filtrados (mostra contagem de resultados e total de páginas após o filtro).
+- Botão de limpar (×) aparece quando há texto no campo de busca.
+
 ### Requisitos de ambiente
 
 - Node.js: ^20.19.0 ou >=22.12.0
