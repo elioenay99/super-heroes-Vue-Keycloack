@@ -13,6 +13,7 @@ Estrutura relevante:
 - `src/lib/http.ts` — Cliente Axios configurado com baseURL, headers e timeout
 - `src/stores/heroes.ts` — Store Pinia (ViewModel) com estado `items`, `loading`, `error` e ação `fetchAll`
 - `src/views/HeroesListView.vue` — View que consome o ViewModel e exibe grid de heróis
+- `src/views/HeroDetailView.vue` — View de detalhes, carregada sob demanda, que busca dados por ID
 - `src/router/index.ts` — Rota `/` apontando para a lista
 
 Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas de forma preguiçosa (lazy) e os tipos cobrem todo o contrato da API.
@@ -35,6 +36,15 @@ Estados tratados: carregamento, erro com retry e vazio. Imagens são carregadas 
 - Campo de pesquisa no cabeçalho: digite para filtrar em tempo real (case-insensitive).
 - A paginação passa a considerar somente os itens filtrados (mostra contagem de resultados e total de páginas após o filtro).
 - Botão de limpar (×) aparece quando há texto no campo de busca.
+
+### Tela de detalhes do herói
+
+- Ao clicar em um card na lista, você é levado à rota `/heroes/:id`.
+- A tela de detalhes carrega os dados do herói pelo endpoint `id/{id}.json` e exibe:
+  - Imagem grande, nome, publisher e alinhamento;
+  - Powerstats (intelligence, strength, speed, durability, power, combat);
+  - Aparência, Biografia, Trabalho e Conexões.
+- Há um botão "Voltar" para retornar à lista.
 
 ### Requisitos de ambiente
 

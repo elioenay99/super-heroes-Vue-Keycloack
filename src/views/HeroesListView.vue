@@ -14,7 +14,7 @@ onMounted(() => {
   <div class="mx-auto max-w-6xl px-4 py-6">
     <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4">
       <div>
-        <h1 class="text-3xl font-semibold tracking-tight">Superheroes</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Super-heróis</h1>
         <p class="text-slate-400 mt-1">Fonte: akabab/superhero-api</p>
       </div>
       <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
@@ -67,22 +67,27 @@ onMounted(() => {
         </div>
 
         <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          <li v-for="h in store.pagedItems" :key="h.id" class="rounded-xl overflow-hidden border border-white/10 bg-slate-800/60 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition" :data-alignment="h.biography.alignment">
-            <div class="relative">
-              <img class="w-full h-56 object-cover bg-slate-900" :src="h.images.sm" :alt="h.name" loading="lazy" />
-              <span class="absolute left-2 bottom-2 rounded-md border border-white/10 bg-slate-900/80 px-2 py-0.5 text-[11px] text-slate-300 backdrop-blur" v-if="h.biography.publisher">{{ h.biography.publisher }}</span>
-            </div>
-            <div class="px-3 py-3">
-              <h2 class="text-base font-medium mb-1 truncate">{{ h.name }}</h2>
-              <p class="inline-block text-xs capitalize rounded-full border px-2 py-0.5"
-                 :class="{
-                   'bg-emerald-400/10 text-emerald-300 border-emerald-500/40': h.biography.alignment === 'good',
-                   'bg-rose-400/10 text-rose-300 border-rose-500/40': h.biography.alignment === 'bad',
-                   'bg-slate-400/10 text-slate-300 border-slate-500/40': !h.biography.alignment || h.biography.alignment === 'neutral'
-                 }">
-                {{ h.biography.alignment || 'neutral' }}
-              </p>
-            </div>
+          <li v-for="h in store.pagedItems" :key="h.id" :data-alignment="h.biography.alignment">
+            <RouterLink
+              :to="`/heroes/${h.id}`"
+              class="block rounded-xl overflow-hidden border border-white/10 bg-slate-800/60 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            >
+              <div class="relative">
+                <img class="w-full h-56 object-cover bg-slate-900" :src="h.images.sm" :alt="h.name" loading="lazy" />
+                <span class="absolute left-2 bottom-2 rounded-md border border-white/10 bg-slate-900/80 px-2 py-0.5 text-[11px] text-slate-300 backdrop-blur" v-if="h.biography.publisher">{{ h.biography.publisher }}</span>
+              </div>
+              <div class="px-3 py-3">
+                <h2 class="text-base font-medium mb-1 truncate">{{ h.name }}</h2>
+                <p class="inline-block text-xs capitalize rounded-full border px-2 py-0.5"
+                   :class="{
+                     'bg-emerald-400/10 text-emerald-300 border-emerald-500/40': h.biography.alignment === 'good',
+                     'bg-rose-400/10 text-rose-300 border-rose-500/40': h.biography.alignment === 'bad',
+                     'bg-slate-400/10 text-slate-300 border-slate-500/40': !h.biography.alignment || h.biography.alignment === 'neutral'
+                   }">
+                  {{ h.biography.alignment === 'good' ? 'herói' : (h.biography.alignment === 'bad' ? 'vilão' : 'neutro') }}
+                </p>
+              </div>
+            </RouterLink>
           </li>
         </ul>
 
