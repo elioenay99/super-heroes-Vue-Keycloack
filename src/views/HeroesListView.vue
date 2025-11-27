@@ -4,6 +4,8 @@ import { useIntersectionObserver, watchDebounced } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
 import { useHeroesStore } from '@/stores/heroes'
 import { useCompareStore } from '@/stores/compare'
+import { keycloak, logout } from '@/lib/keycloak'
+import type { KeycloakTokenParsed } from 'keycloak-js'
 
 const store = useHeroesStore()
 const compare = useCompareStore()
@@ -60,6 +62,25 @@ useHead(() => ({
     { name: 'twitter:card', content: 'summary' },
   ],
 }))
+
+// Info do usuário autenticado (Keycloak)
+const isAuthenticated = computed(() => !!keycloak.authenticated)
+const userName = computed(() => {
+  const p = keycloak.tokenParsed as (KeycloakTokenParsed & {
+    name?: string
+    preferred_username?: string
+    email?: string
+  }) | undefined
+  return p?.name ?? p?.preferred_username ?? p?.email ?? 'Usuário'
+})
+
+async function handleLogout() {
+  try {
+    await logout()
+  } catch (e) {
+    console.error('Erro ao sair:', e)
+  }
+}
 </script>
 
 <template>
@@ -86,6 +107,15 @@ useHead(() => ({
         <p class="text-slate-300 mt-1 sm:mt-0" aria-live="polite">
           {{ store.count }} resultados • Página {{ store.page }} de {{ store.totalPages }}
         </p>
+        <div v-if="isAuthenticated" class="mt-2 sm:mt-0 flex items-center gap-2">
+          <span class="text-slate-200 text-sm">Logado como: <strong>{{ userName }}</strong></span>
+          <button
+            class="inline-flex items-center gap-2 rounded-lg bg-rose-500/90 px-3 py-1.5 text-sm font-medium text-rose-50 hover:bg-rose-400"
+            @click="handleLogout"
+            aria-label="Sair"
+            title="Sair"
+          >Sair</button>
+        </div>
       </div>
     </header>
 
