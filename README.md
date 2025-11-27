@@ -198,4 +198,4 @@ Deploy estático (exemplos):
 - Dados fornecidos pela Superhero API: https://akabab.github.io/superhero-api/
 - Este projeto utiliza bibliotecas open-source (Vue, Vite, Pinia, Axios, Chart.js, etc.).
 
-Licença: defina a licença que preferir (ex.: MIT). Caso deseje contribuir, abra uma Issue ou Pull Request.
+Licença: MIT — veja o arquivo LICENSE. Caso deseje contribuir, abra uma Issue ou Pull Request.
