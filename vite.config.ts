@@ -10,6 +10,15 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  server: {
+    port: 9100,
+    strictPort: true,
+    // open: true, // opcional: abre o navegador automaticamente
+  },
+  preview: {
+    port: 9100,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
